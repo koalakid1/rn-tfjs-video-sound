@@ -22,7 +22,7 @@
 		405CD97F254951DE007B057D /* count2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 405CD97C254951DE007B057D /* count2.mp3 */; };
 		405CD980254951DE007B057D /* count1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 405CD97D254951DE007B057D /* count1.mp3 */; };
 		405CD981254951DE007B057D /* count3.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 405CD97E254951DE007B057D /* count3.mp3 */; };
-		4099A7E62547C66700E96885 /* forgiveness1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4099A7E52547C66700E96885 /* forgiveness1.mp3 */; };
+		40889F92254FE5EA00D511A1 /* forgiveness.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 40889F91254FE5EA00D511A1 /* forgiveness.mp3 */; };
 		40B7A755254A61D600AA9330 /* bad.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 40B7A752254A61D600AA9330 /* bad.mp3 */; };
 		40B7A756254A61D600AA9330 /* nice.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 40B7A753254A61D600AA9330 /* nice.mp3 */; };
 		40B7A757254A61D600AA9330 /* great.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 40B7A754254A61D600AA9330 /* great.mp3 */; };
@@ -71,7 +71,7 @@
 		405CD97C254951DE007B057D /* count2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = count2.mp3; path = ../../soundresource/count2.mp3; sourceTree = "<group>"; };
 		405CD97D254951DE007B057D /* count1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = count1.mp3; path = ../../soundresource/count1.mp3; sourceTree = "<group>"; };
 		405CD97E254951DE007B057D /* count3.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = count3.mp3; path = ../../soundresource/count3.mp3; sourceTree = "<group>"; };
-		4099A7E52547C66700E96885 /* forgiveness1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = forgiveness1.mp3; path = ../forgiveness1.mp3; sourceTree = "<group>"; };
+		40889F91254FE5EA00D511A1 /* forgiveness.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = forgiveness.mp3; path = ../../soundresource/forgiveness.mp3; sourceTree = "<group>"; };
 		40B7A752254A61D600AA9330 /* bad.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = bad.mp3; path = ../../soundresource/bad.mp3; sourceTree = "<group>"; };
 		40B7A753254A61D600AA9330 /* nice.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = nice.mp3; path = ../../soundresource/nice.mp3; sourceTree = "<group>"; };
 		40B7A754254A61D600AA9330 /* great.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = great.mp3; path = ../../soundresource/great.mp3; sourceTree = "<group>"; };
@@ -177,6 +177,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				40889F91254FE5EA00D511A1 /* forgiveness.mp3 */,
 				40B7A752254A61D600AA9330 /* bad.mp3 */,
 				40B7A754254A61D600AA9330 /* great.mp3 */,
 				40B7A753254A61D600AA9330 /* nice.mp3 */,
@@ -185,7 +186,6 @@
 				405CD97E254951DE007B057D /* count3.mp3 */,
 				405CD97025494C16007B057D /* start1.mp3 */,
 				405CD96A2549492E007B057D /* start.mp3 */,
-				4099A7E52547C66700E96885 /* forgiveness1.mp3 */,
 				13B07FAE1A68108700A75B9A /* sound */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* soundTests */,
@@ -371,7 +371,7 @@
 				40B7A756254A61D600AA9330 /* nice.mp3 in Resources */,
 				40B7A757254A61D600AA9330 /* great.mp3 in Resources */,
 				405CD96B2549492E007B057D /* start.mp3 in Resources */,
-				4099A7E62547C66700E96885 /* forgiveness1.mp3 in Resources */,
+				40889F92254FE5EA00D511A1 /* forgiveness.mp3 in Resources */,
 				40B7A755254A61D600AA9330 /* bad.mp3 in Resources */,
 				405CD97F254951DE007B057D /* count2.mp3 in Resources */,
 				405CD981254951DE007B057D /* count3.mp3 in Resources */,

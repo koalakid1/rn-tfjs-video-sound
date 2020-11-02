@@ -18,6 +18,7 @@ import {
   Platform,
   Dimensions,
   useWindowDimensions,
+  LogBox,
 } from 'react-native';
 
 import {
@@ -43,13 +44,28 @@ import Video from 'react-native-video';
 import * as utils from './utils/utils';
 import CircleProgress from './utils/circleProgress';
 
+import lungeModel from './model/lunge/model.json';
+import lungeModelWeights from './model/lunge/group1-shard1of1.bin';
+import shoulderPressModel from './model/shoulder_press/model.json';
+import shoulderPressModelWeights from './model/shoulder_press/group1-shard1of1.bin';
+import squatModel from './model/squat/model.json';
+import squatModelWeights from './model/squat/group1-shard1of1.bin';
+
 const TensorCamera = cameraWithTensors(Camera);
-const modelJson = require('./model/model.json');
-const modelWeights = require('./model/group1-shard1of1.bin');
+// const modelJson = lungeModel;
+// const modelWeights = lungeModelWeights;
+// const modelJson = shoulderPressModel;
+// const modelWeights = shoulderPressModelWeights;
+const modelJson = squatModel;
+const modelWeights = squatModelWeights;
 const {width, height} = Dimensions.get('window');
 
 const resolution = 224;
 var isStart = false;
+var c1, c2, c3, c4, c5, c6;
+var videoURL = require('./prepare.mp4');
+var checkExCount = 0;
+var checkIntervalCount = 0;
 
 export default function App() {
   const [tfReady, setTfReady] = useState(false);
@@ -89,42 +105,21 @@ export default function App() {
     setHasPermission(status === 'granted');
   };
 
-  // useEffect(() => {
-  //     checkTf();
-  //     cameraCheck();
-  // }, [])
-
   useEffect(() => {
-    // (async () => {
-    //     const {status} = await Camera.requestPermissionsAsync();
-    //     setHasPermission(status === 'granted');
-    // })();
     checkTf();
     cameraCheck();
-
-    // Enable playback in silence mode
     Sound.setCategory('Playback');
-
-    //audioStart('forgiveness1.mp3',0.05);
+    audioStart('forgiveness.mp3');
+    LogBox.ignoreLogs(['Possible Unhandled Promise Rejection']);
   }, []);
 
   function audioStart(fileName, volume) {
-    // Load the sound file 'whoosh.mp3' from the app bundle
-    // See notes below about preloading sounds within initialization code below.
     var whoosh = new Sound(fileName, Sound.MAIN_BUNDLE, (error) => {
       if (error) {
         console.log('failed to load the sound', error);
         return;
       }
-      // loaded successfully
-      console.log(
-        'duration in seconds: ' +
-          whoosh.getDuration() +
-          'number of channels: ' +
-          whoosh.getNumberOfChannels(),
-      );
 
-      // Play the sound with an onEnd callback
       whoosh.play((success) => {
         if (success) {
           console.log('successfully finished playing');
@@ -134,34 +129,113 @@ export default function App() {
       });
     });
 
-    // Reduce the volume by half
     whoosh.setVolume(volume);
 
-    // Position the sound to the full right in a stereo field
     whoosh.setPan(1);
 
-    // Loop indefinitely until stop() is called
     whoosh.setNumberOfLoops(-1);
 
-    // Get properties of the player instance
-    console.log('volume: ' + whoosh.getVolume());
-    console.log('pan: ' + whoosh.getPan());
-    console.log('loops: ' + whoosh.getNumberOfLoops());
-
-    // Seek to a specific point in seconds
     whoosh.setCurrentTime(2.5);
 
-    // Get the current playback point in seconds
-    whoosh.getCurrentTime((seconds) => console.log('at ' + seconds));
-
-    // Pause the sound
     whoosh.pause();
 
-    // Release the audio player resource
     whoosh.release();
   }
 
   let AUTORENDER = true;
+
+  async function algorithm(images, sec) {
+    //audioStart('start1.mp3', 1);
+
+    setTimeout(async () => {
+      const imageTensor = images.next().value;
+      const pose = await poseModel.estimateSinglePose(imageTensor);
+      setPose(pose);
+
+      var ten = utils.vecotrize(pose);
+
+      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+      c1 = prediction.dataSync()[0];
+      console.log('첫번째 : ', prediction.dataSync());
+    }, sec * (3 / 4));
+
+    setTimeout(async () => {
+      const imageTensor = images.next().value;
+      const pose = await poseModel.estimateSinglePose(imageTensor);
+      setPose(pose);
+
+      var ten = utils.vecotrize(pose);
+
+      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+      c2 = prediction.dataSync()[0];
+      console.log('두번째 : ', prediction.dataSync());
+    }, sec * (5 / 4));
+
+    setTimeout(async () => {
+      const imageTensor = images.next().value;
+      const pose = await poseModel.estimateSinglePose(imageTensor);
+      setPose(pose);
+
+      var ten = utils.vecotrize(pose);
+
+      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+      c3 = prediction.dataSync()[1];
+      console.log('세번째 : ', prediction.dataSync());
+    }, sec * (7 / 4));
+
+    setTimeout(async () => {
+      const imageTensor = images.next().value;
+      const pose = await poseModel.estimateSinglePose(imageTensor);
+      setPose(pose);
+
+      var ten = utils.vecotrize(pose);
+
+      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+      c4 = prediction.dataSync()[1];
+      console.log('네번째 : ', prediction.dataSync());
+    }, sec * (9 / 4));
+
+    setTimeout(async () => {
+      const imageTensor = images.next().value;
+      const pose = await poseModel.estimateSinglePose(imageTensor);
+      setPose(pose);
+
+      var ten = utils.vecotrize(pose);
+
+      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+      c5 = prediction.dataSync()[0];
+      console.log('다섯번째 : ', prediction.dataSync());
+    }, sec * (11 / 4));
+
+    setTimeout(async () => {
+      const imageTensor = images.next().value;
+      const pose = await poseModel.estimateSinglePose(imageTensor);
+      setPose(pose);
+
+      var ten = utils.vecotrize(pose);
+
+      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+      c6 = prediction.dataSync()[0];
+      console.log('여섯번째 : ', prediction.dataSync());
+
+      var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
+      console.log('총점은 : ', score);
+      if (score >= 67) {
+        audioStart('great.mp3', 1);
+      } else if (score >= 52) {
+        audioStart('nice.mp3', 1);
+      } else {
+        audioStart('bad.mp3', 1);
+      }
+      checkExCount += 1;
+    }, sec * (13 / 4));
+  }
 
   async function handleCameraStream(images, updatePreview, gl) {
     const loop = async () => {
@@ -172,34 +246,38 @@ export default function App() {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
       setPose(pose);
-      console.log(pose.score);
-      console.log(isStart);
       if (pose.score >= 0.4) {
-        isStart = true;
-        setDisplayText('start');
-        // var ten = utils.vecotrize(pose);
-        // // Data 만들
-        // const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-        // const posenum = prediction.argMax(1).dataSync()[0];
-        // const highestPropPred = prediction.dataSync()[posenum];
-        // const surity = Math.round(highestPropPred * 100);
-        // Debugging
-        // console.log('pose number : ', posenum);
-        // console.log('pose prob : ', surity);
-        // console.log('all prob : ', prediction.dataSync());
-        // if (surity > 30) {
-        //   if (posenum === 0) {
-        //     setDisplayText('스탠드');
-        //   } else if (posenum === 1) {
-        //     setDisplayText('스~~~쿼트!!!!');
-        //   } else if (posenum === 2) {
-        //     setDisplayText('자세가 잘못되었습니다.');
-        //   } else {
-        //     setDisplayText('Wrong Result');
-        //   }
-        // } else {
-        //   setDisplayText('not sure what that is');
-        // }
+        if (!isStart) {
+          isStart = true;
+          setTimeout(() => {
+            audioStart('count3.mp3');
+            setTimeout(() => {
+              audioStart('count2.mp3');
+            }, 1000);
+            setTimeout(() => {
+              audioStart('count1.mp3');
+            }, 2000);
+            setTimeout(() => {
+              audioStart('start.mp3');
+              videoURL = require('./squat.mp4');
+              var sec = 850;
+              setTimeout(() => {
+                algorithm(images, sec);
+                var interval = setInterval(() => {
+                  algorithm(images, sec);
+                  console.log('checkExCount : ', checkExCount);
+                  if (checkExCount == 9) {
+                    clearInterval(interval);
+                    checkExCount = -1;
+                    checkIntervalCount += 1;
+                  }
+                }, sec * 4);
+              }, 700);
+            }, 3000);
+          }, 7000);
+        }
+
+        setDisplayText(checkExCount + ' / 10');
       } else {
         setDisplayText('카메라에 딱 맞게 들어와 주세요!');
       }
@@ -213,155 +291,6 @@ export default function App() {
     };
 
     loop();
-
-    setTimeout(() => {
-      var c1;
-      var c2;
-      var c3;
-
-      audioStart('start1.mp3', 1);
-      setTimeout(async () => {
-        const imageTensor = images.next().value;
-        const pose = await poseModel.estimateSinglePose(imageTensor);
-        setPose(pose);
-        console.log(pose);
-        var ten = utils.vecotrize(pose);
-
-        // Data 만들
-
-        const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-        const posenum = prediction.argMax(1).dataSync()[0];
-
-        if (posenum == 0) {
-          c1 = 100;
-        } else {
-          c1 = 0;
-        }
-        console.log(c1);
-      }, 1000);
-
-      setTimeout(async () => {
-        const imageTensor = images.next().value;
-        const pose = await poseModel.estimateSinglePose(imageTensor);
-        setPose(pose);
-        console.log(pose);
-        var ten = utils.vecotrize(pose);
-
-        // Data 만들
-
-        const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-        const posenum = prediction.argMax(1).dataSync()[0];
-        if (posenum == 1) {
-          c2 = 100;
-        } else {
-          c2 = 0;
-        }
-        console.log(c2);
-      }, 1800);
-
-      setTimeout(async () => {
-        const imageTensor = images.next().value;
-        const pose = await poseModel.estimateSinglePose(imageTensor);
-        setPose(pose);
-        console.log(pose);
-        var ten = utils.vecotrize(pose);
-
-        // Data 만들
-
-        const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-        const posenum = prediction.argMax(1).dataSync()[0];
-        if (posenum == 0) {
-          c3 = 100;
-        } else {
-          c3 = 0;
-        }
-        console.log(c3);
-
-        var score = c1 + c2 + c3;
-        if (score == 300) {
-          audioStart('great.mp3', 1);
-        } else if (c2 == 100) {
-          audioStart('nice.mp3', 1);
-        } else {
-          audioStart('bad.mp3', 1);
-        }
-      }, 3000);
-      setInterval(() => {
-        audioStart('start1.mp3', 1);
-        setTimeout(async () => {
-          const imageTensor = images.next().value;
-          const pose = await poseModel.estimateSinglePose(imageTensor);
-          setPose(pose);
-          console.log(pose);
-          var ten = utils.vecotrize(pose);
-
-          // Data 만들
-
-          const prediction = await model.predict(
-            tf.tensor(ten).reshape([1, 34]),
-          );
-          const posenum = prediction.argMax(1).dataSync()[0];
-
-          if (posenum == 0) {
-            c1 = 100;
-          } else {
-            c1 = 0;
-          }
-          console.log(c1);
-        }, 1000);
-
-        setTimeout(async () => {
-          const imageTensor = images.next().value;
-          const pose = await poseModel.estimateSinglePose(imageTensor);
-          setPose(pose);
-          console.log(pose);
-          var ten = utils.vecotrize(pose);
-
-          // Data 만들
-
-          const prediction = await model.predict(
-            tf.tensor(ten).reshape([1, 34]),
-          );
-          const posenum = prediction.argMax(1).dataSync()[0];
-          if (posenum == 1) {
-            c2 = 100;
-          } else {
-            c2 = 0;
-          }
-          console.log(c2);
-        }, 1800);
-
-        setTimeout(async () => {
-          const imageTensor = images.next().value;
-          const pose = await poseModel.estimateSinglePose(imageTensor);
-          setPose(pose);
-          console.log(pose);
-          var ten = utils.vecotrize(pose);
-
-          // Data 만들
-
-          const prediction = await model.predict(
-            tf.tensor(ten).reshape([1, 34]),
-          );
-          const posenum = prediction.argMax(1).dataSync()[0];
-          if (posenum == 0) {
-            c3 = 100;
-          } else {
-            c3 = 0;
-          }
-          console.log(c3);
-
-          var score = c1 + c2 + c3;
-          if (score == 300) {
-            audioStart('great.mp3', 1);
-          } else if (c2 == 100) {
-            audioStart('nice.mp3', 1);
-          } else {
-            audioStart('bad.mp3', 1);
-          }
-        }, 3000);
-      }, 4000);
-    }, 3000);
   }
   let textureDims;
   if (Platform.OS === 'ios') {
@@ -386,7 +315,7 @@ export default function App() {
   return (
     <>
       <Video
-        source={require('./squat.mp4')}
+        source={videoURL}
         style={{flex: 1, width: width, height: height}}
         repeat={true}
         muted
@@ -396,19 +325,13 @@ export default function App() {
           width: width * 0.3,
           height: height * 0.23,
           position: 'absolute',
-          bottom: height * 0.5,
+          bottom: height * 0.24,
           left: '3%',
         }}>
         <View style={styles.container}>
-          <Text style={{fontWeight: 'bold', width: width * 0.6}}>
+          <Text style={{fontWeight: 'bold', width: width * 0.3}}>
             {displayText}
           </Text>
-          {/* <Text style={{fontWeight: 'bold', alignSelf: 'flex-end'}}>
-            {count}
-          </Text>
-          <Text style={{fontWeight: 'bold', alignSelf: 'flex-end'}}>
-            Nice: {nice}, Great: {great}, Bad: {bad}
-          </Text> */}
           {tfReady ? (
             <TensorCamera
               style={{

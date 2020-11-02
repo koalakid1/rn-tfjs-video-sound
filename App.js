@@ -66,12 +66,20 @@ var c1, c2, c3, c4, c5, c6;
 var videoURL = require('./prepare.mp4');
 var checkExCount = 0;
 var checkIntervalCount = 0;
+var great = 0,
+  nice = 0,
+  bad = 0;
+var nowScore = '';
+var preScore = '';
+var combo = 0;
 
 export default function App() {
   const [tfReady, setTfReady] = useState(false);
   const [model, setModel] = useState(false);
   const [poseModel, setPoseModel] = useState(false);
-  const [displayText, setDisplayText] = useState('loading models');
+  const [displayText, setDisplayText] = useState('');
+  const [displayText2, setDisplayText2] = useState('');
+  const [displayText3, setDisplayText3] = useState('');
   const [pose, setPose] = useState(null);
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
@@ -96,7 +104,7 @@ export default function App() {
     console.log('Classifier loaded');
     setPoseModel(poseModel);
     setModel(model);
-    setDisplayText('loaded Models');
+    // setDisplayText('loaded Models');
     setTfReady(true);
   };
 
@@ -228,10 +236,16 @@ export default function App() {
       console.log('총점은 : ', score);
       if (score >= 67) {
         audioStart('great.mp3', 1);
+        nowScore = 'great';
+        great += 1;
       } else if (score >= 52) {
         audioStart('nice.mp3', 1);
+        nowScore = 'nice';
+        nice += 1;
       } else {
         audioStart('bad.mp3', 1);
+        nowScore = 'bad';
+        bad += 1;
       }
       checkExCount += 1;
     }, sec * (13 / 4));
@@ -247,8 +261,10 @@ export default function App() {
       const pose = await poseModel.estimateSinglePose(imageTensor);
       setPose(pose);
       if (pose.score >= 0.4) {
+        setDisplayText('');
         if (!isStart) {
           isStart = true;
+
           setTimeout(() => {
             audioStart('count3.mp3');
             setTimeout(() => {
@@ -259,25 +275,35 @@ export default function App() {
             }, 2000);
             setTimeout(() => {
               audioStart('start.mp3');
+              setDisplayText2(checkExCount + ' / 10');
               videoURL = require('./squat.mp4');
               var sec = 850;
               setTimeout(() => {
                 algorithm(images, sec);
                 var interval = setInterval(() => {
                   algorithm(images, sec);
+                  if (nowScore == 'great' || nowScore == 'nice') {
+                    combo += 1;
+                    setDisplayText3(combo + ' combo!');
+                  } else {
+                    if (combo !== 0) {
+                      setDisplayText3('break!!');
+                      combo = 0;
+                    } else {
+                      setDisplayText3('');
+                    }
+                  }
+                  setDisplayText2(checkExCount + ' / 10 \n' + nowScore);
+
                   console.log('checkExCount : ', checkExCount);
                   if (checkExCount == 9) {
                     clearInterval(interval);
-                    checkExCount = -1;
-                    checkIntervalCount += 1;
                   }
                 }, sec * 4);
               }, 700);
             }, 3000);
-          }, 7000);
+          }, 1000);
         }
-
-        setDisplayText(checkExCount + ' / 10');
       } else {
         setDisplayText('카메라에 딱 맞게 들어와 주세요!');
       }
@@ -314,6 +340,39 @@ export default function App() {
 
   return (
     <>
+      <Text
+        style={{
+          position: 'absolute',
+          left: 10,
+          top: 20,
+          fontSize: 20,
+          zIndex: 2,
+          backgroundColor: 'white',
+        }}>
+        {displayText}
+      </Text>
+      <Text
+        style={{
+          position: 'absolute',
+          right: 10,
+          top: 20,
+          fontSize: 20,
+          zIndex: 2,
+          backgroundColor: 'white',
+        }}>
+        {displayText2}
+      </Text>
+      <Text
+        style={{
+          position: 'absolute',
+          left: 10,
+          top: 40,
+          fontSize: 20,
+          zIndex: 2,
+          backgroundColor: 'white',
+        }}>
+        {displayText3}
+      </Text>
       <Video
         source={videoURL}
         style={{flex: 1, width: width, height: height}}
@@ -325,13 +384,10 @@ export default function App() {
           width: width * 0.3,
           height: height * 0.23,
           position: 'absolute',
-          bottom: height * 0.24,
+          bottom: height * 0.18,
           left: '3%',
         }}>
         <View style={styles.container}>
-          <Text style={{fontWeight: 'bold', width: width * 0.3}}>
-            {displayText}
-          </Text>
           {tfReady ? (
             <TensorCamera
               style={{

@@ -344,7 +344,7 @@ export default function App() {
         style={{
           position: 'absolute',
           left: 10,
-          top: 20,
+          top: height * 0.1,
           fontSize: 20,
           zIndex: 2,
           backgroundColor: 'white',
@@ -355,7 +355,7 @@ export default function App() {
         style={{
           position: 'absolute',
           right: 10,
-          top: 20,
+          top: height * 0.1,
           fontSize: 20,
           zIndex: 2,
           backgroundColor: 'white',
@@ -366,7 +366,7 @@ export default function App() {
         style={{
           position: 'absolute',
           left: 10,
-          top: 40,
+          top: height * 0.1,
           fontSize: 20,
           zIndex: 2,
           backgroundColor: 'white',

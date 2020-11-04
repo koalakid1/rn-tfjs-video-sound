@@ -56,7 +56,7 @@ const resolution = 224;
 var isStart = false;
 var c1, c2, c3, c4, c5, c6;
 var videoURL = require('./video/prepare.mp4');
-var nowCount = 0;
+var nowCount = 0; // 현재 몇번 했는지
 var nowInterval = 0;
 var great = 0,
   nice = 0,
@@ -91,6 +91,7 @@ export default function Exercise({route, navigation}) {
   const exercise = route.params.exercise;
   const maxInterval = route.params.maxInterval;
 
+  // tfjs 모델 로드
   const checkTf = async () => {
     console.log('loading models');
     await tf.ready();
@@ -109,10 +110,10 @@ export default function Exercise({route, navigation}) {
     console.log('Classifier loaded');
     setPoseModel(poseModel);
     setModel(model);
-    // setDisplayText('loaded Models');
     setTfReady(true);
   };
 
+  // 카메라 퍼미션
   const cameraCheck = async () => {
     const {status} = await Camera.requestPermissionsAsync();
     setHasPermission(status === 'granted');
@@ -147,6 +148,7 @@ export default function Exercise({route, navigation}) {
         console.log('failed to load the sound', error);
         return;
       }
+
       whoosh.setVolume(volume);
 
       whoosh.play((success) => {
@@ -161,9 +163,8 @@ export default function Exercise({route, navigation}) {
     return whoosh;
   }
 
-  let AUTORENDER = true;
-
   async function algorithm(images, sec) {
+    // 첫번째 판정
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -181,6 +182,7 @@ export default function Exercise({route, navigation}) {
       }
     }, sec * (3 / 4));
 
+    // 두번째 판정
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -194,6 +196,7 @@ export default function Exercise({route, navigation}) {
       console.log('두번째 : ', prediction.dataSync());
     }, sec * (5 / 4));
 
+    // 세번째 판정
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -207,6 +210,7 @@ export default function Exercise({route, navigation}) {
       console.log('세번째 : ', prediction.dataSync());
     }, sec * (7 / 4));
 
+    // 네번째 판정
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -220,6 +224,7 @@ export default function Exercise({route, navigation}) {
       console.log('네번째 : ', prediction.dataSync());
     }, sec * (9 / 4));
 
+    // 다섯번째 판정
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -233,6 +238,7 @@ export default function Exercise({route, navigation}) {
       console.log('다섯번째 : ', prediction.dataSync());
     }, sec * (11 / 4));
 
+    // 여섯번째 판정
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -262,10 +268,13 @@ export default function Exercise({route, navigation}) {
 
       scoreAudio(nowScore, SoundNum[nowScore]);
 
-      scoreAudio(nowScore);
-
       setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
     }, sec * (13 / 4));
+
+    // setTimeout(async () => {
+      
+    // }, sec * (13 / 4))
+
   }
 
   // 판정 후 음성
@@ -341,6 +350,7 @@ export default function Exercise({route, navigation}) {
     }, time);
   }
 
+  let AUTORENDER = true;
   async function handleCameraStream(images, updatePreview, gl) {
     const loop = async () => {
       if (!AUTORENDER) {

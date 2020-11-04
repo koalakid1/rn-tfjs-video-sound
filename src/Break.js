@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import {maximum} from '@tensorflow/tfjs';
+import CircleProgress from './utils/circleProgress';
+
 const {width, height} = Dimensions.get('window');
 const CONTENTS_WIDTH = width * 0.9;
 const CONTENTS_HEIGHT = height * 0.4;
@@ -46,6 +48,7 @@ const Break = ({
             great : {great} nice : {nice} bad : {bad}
           </Text>
           <Text>combo : {combo}</Text>
+          <CircleProgress></CircleProgress>
         </View>
         <View style={styles.btnGroup}>
           <TouchableOpacity

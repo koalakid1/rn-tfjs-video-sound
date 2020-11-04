@@ -31,7 +31,7 @@ import {
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import exerciseScreen from './Exercise';
+import exerciseScreen from './src/Exercise';
 import {Input} from 'native-base';
 
 var modelJson, modelWeights;
@@ -40,14 +40,14 @@ function selectScreen({navigation}) {
   const [count, setCount] = useState(3);
   const onPress = (key) => {
     if (key == 'lunge') {
-      modelJson = require('./model/lunge/model.json');
-      modelWeights = require('./model/lunge/group1-shard1of1.bin');
+      modelJson = require('./src/model/lunge/model.json');
+      modelWeights = require('./src/model/lunge/group1-shard1of1.bin');
     } else if (key == 'squat') {
-      modelJson = require('./model/squat/model.json');
-      modelWeights = require('./model/squat/group1-shard1of1.bin');
+      modelJson = require('./src/model/squat/model.json');
+      modelWeights = require('./src/model/squat/group1-shard1of1.bin');
     } else if (key == 'shoulderPress') {
-      modelJson = require('./model/shoulder_press/model.json');
-      modelWeights = require('./model/shoulder_press/group1-shard1of1.bin');
+      modelJson = require('./src/model/shoulder_press/model.json');
+      modelWeights = require('./src/model/shoulder_press/group1-shard1of1.bin');
     }
     navigation.navigate('doing exercise', {
       modelJson,

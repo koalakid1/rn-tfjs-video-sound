@@ -42,7 +42,6 @@ import Svg, {Circle, Rect, G, Line} from 'react-native-svg';
 import Sound from 'react-native-sound';
 import Video from 'react-native-video';
 import * as utils from './utils/utils';
-import CircleProgress from './utils/circleProgress';
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -66,6 +65,7 @@ var nowScore = '';
 var combo = 0;
 var visible = false;
 var pause = false;
+var maxCount = 10;
 
 export default function Exercise({route, navigation}) {
   const [tfReady, setTfReady] = useState(false);
@@ -314,7 +314,7 @@ export default function Exercise({route, navigation}) {
             algorithm(images, sec);
             console.log('nowCount : ', nowCount);
             // 코드 좀 잘못짜서 setInterval 멈추는 코드
-            if (nowCount == 9) {
+            if (nowCount == maxCount - 1) {
               clearInterval(interval);
             }
           }, sec * 4);
@@ -352,7 +352,7 @@ export default function Exercise({route, navigation}) {
         gl.endFrameEXP();
       }
       // 1세트 끝날때 일어나는 일.
-      if (nowCount == 10) {
+      if (nowCount == maxCount) {
         nowCount = 0;
 
         console.log('nowCount : ', nowCount);
@@ -363,6 +363,7 @@ export default function Exercise({route, navigation}) {
         isStart = false;
         console.log('visible : ', visible);
         setDisplayText('');
+        setDisplayText2('');
         setDisplayText3('');
       }
       requestAnimationFrame(loop);

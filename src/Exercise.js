@@ -165,8 +165,7 @@ export default function Exercise({route, navigation}) {
     return whoosh;
   }
 
-  async function algorithm(images, sec) {
-    // 첫번째 판정
+  async function judgement(images, sec, judgeNum) {
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -182,63 +181,90 @@ export default function Exercise({route, navigation}) {
       if (nowCount === maxCount - 1) {
         audioStart('last.wav', 1);
       }
-    }, sec * (3 / 4));
+    }, sec * ((1 + judgeNum * 2) / 4));
+  }
 
-    // 두번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
+  async function algorithm(images, sec) {
+    // 첫번째 판정
+    judgement(images, sec, 1);
+    judgement(images, sec, 2);
+    judgement(images, sec, 3);
+    judgement(images, sec, 4);
+    judgement(images, sec, 5);
+    judgement(images, sec, 6);
+    //   setTimeout(async () => {
+    //     const imageTensor = images.next().value;
+    //     const pose = await poseModel.estimateSinglePose(imageTensor);
+    //     setPose(pose);
 
-      var ten = utils.vecotrize(pose);
+    //     var ten = utils.vecotrize(pose);
 
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+    //     const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
 
-      c2 = prediction.dataSync()[0];
-      console.log('두번째 : ', prediction.dataSync());
-    }, sec * (5 / 4));
+    //     c1 = prediction.dataSync()[0];
+    //     console.log('첫번째 : ', prediction.dataSync());
 
-    // 세번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
+    //     if (nowCount === maxCount - 1) {
+    //       audioStart('last.wav', 1);
+    //     }
+    //   }, sec * (3 / 4));
 
-      var ten = utils.vecotrize(pose);
+    //   //두번째 판정
+    //   judgement(images, sec * (5 / 4));
+    //   setTimeout(async () => {
+    //     const imageTensor = images.next().value;
+    //     const pose = await poseModel.estimateSinglePose(imageTensor);
+    //     setPose(pose);
 
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+    //     var ten = utils.vecotrize(pose);
 
-      c3 = prediction.dataSync()[1];
-      console.log('세번째 : ', prediction.dataSync());
-    }, sec * (7 / 4));
+    //     const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
 
-    // 네번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
+    //     c2 = prediction.dataSync()[0];
+    //     console.log('두번째 : ', prediction.dataSync());
+    //   }, sec * (5 / 4));
 
-      var ten = utils.vecotrize(pose);
+    //   // 세번째 판정
+    //   setTimeout(async () => {
+    //     const imageTensor = images.next().value;
+    //     const pose = await poseModel.estimateSinglePose(imageTensor);
+    //     setPose(pose);
 
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+    //     var ten = utils.vecotrize(pose);
 
-      c4 = prediction.dataSync()[1];
-      console.log('네번째 : ', prediction.dataSync());
-    }, sec * (9 / 4));
+    //     const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
 
-    // 다섯번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
+    //     c3 = prediction.dataSync()[1];
+    //     console.log('세번째 : ', prediction.dataSync());
+    //   }, sec * (7 / 4));
 
-      var ten = utils.vecotrize(pose);
+    //   // 네번째 판정
+    //   setTimeout(async () => {
+    //     const imageTensor = images.next().value;
+    //     const pose = await poseModel.estimateSinglePose(imageTensor);
+    //     setPose(pose);
 
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+    //     var ten = utils.vecotrize(pose);
 
-      c5 = prediction.dataSync()[0];
-      console.log('다섯번째 : ', prediction.dataSync());
-    }, sec * (11 / 4));
+    //     const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+    //     c4 = prediction.dataSync()[1];
+    //     console.log('네번째 : ', prediction.dataSync());
+    //   }, sec * (9 / 4));
+
+    //   // 다섯번째 판정
+    //   setTimeout(async () => {
+    //     const imageTensor = images.next().value;
+    //     const pose = await poseModel.estimateSinglePose(imageTensor);
+    //     setPose(pose);
+
+    //     var ten = utils.vecotrize(pose);
+
+    //     const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+
+    //     c5 = prediction.dataSync()[0];
+    //     console.log('다섯번째 : ', prediction.dataSync());
+    //   }, sec * (11 / 4));
 
     // 여섯번째 판정
     setTimeout(async () => {

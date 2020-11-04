@@ -262,8 +262,6 @@ export default function Exercise({route, navigation}) {
 
       scoreAudio(nowScore, SoundNum[nowScore]);
 
-      scoreAudio(nowScore);
-
       setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
     }, sec * (13 / 4));
   }
@@ -277,7 +275,7 @@ export default function Exercise({route, navigation}) {
         maxCombo = combo;
       }
       combo = 0;
-      audioStart('comboFail.mp3', 1);
+      audioStart('comboFail.mp3', 0.5);
     }
 
     audioStart(nowScore + Math.ceil(Math.random() * SoundNum) + '.wav', 1);

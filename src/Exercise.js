@@ -72,6 +72,7 @@ var SoundNum = {
   nice: 1,
   bad: 1,
 };
+var interval;
 
 export default function Exercise({route, navigation}) {
   const [tfReady, setTfReady] = useState(false);
@@ -131,6 +132,7 @@ export default function Exercise({route, navigation}) {
     return () => {
       console.log('나 뒤로간다 ㅋ');
       isStart = false;
+      clearInterval(interval);
       backgroundSound.stop();
       nowCount = 0;
       nowInterval = 0;
@@ -250,7 +252,8 @@ export default function Exercise({route, navigation}) {
 
       c6 = prediction.dataSync()[0];
       console.log('여섯번째 : ', prediction.dataSync());
-
+    }, sec * (13 / 4));
+    setTimeout(() => {
       var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
       console.log('총점은 : ', score);
       if (score >= 67) {
@@ -270,11 +273,6 @@ export default function Exercise({route, navigation}) {
 
       setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
     }, sec * (13 / 4));
-
-    // setTimeout(async () => {
-      
-    // }, sec * (13 / 4))
-
   }
 
   // 판정 후 음성
@@ -337,7 +335,7 @@ export default function Exercise({route, navigation}) {
         var sec = 850;
         setTimeout(() => {
           algorithm(images, sec);
-          var interval = setInterval(() => {
+          interval = setInterval(() => {
             //운동 판별
             algorithm(images, sec);
             // 코드 좀 잘못짜서 setInterval 멈추는 코드

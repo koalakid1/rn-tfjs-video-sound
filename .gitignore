@@ -32,11 +32,10 @@ build/
 .gradle
 local.properties
 *.iml
-<<<<<<< HEAD
 model
-=======
+sound
+video
 
->>>>>>> bf7bc83f849df25a010b6efa83fd327ce68f51d6
 # node.js
 #
 node_modules/

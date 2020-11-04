@@ -28,426 +28,121 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import {Camera} from 'expo-camera';
-import * as tf from '@tensorflow/tfjs';
-import {
-  cameraWithTensors,
-  bundleResourceIO,
-  decodeJpeg,
-} from '@tensorflow/tfjs-react-native';
-import * as posenet from '@tensorflow-models/posenet';
 
-import Svg, {Circle, Rect, G, Line} from 'react-native-svg';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import exerciseScreen from './Exercise';
+import {Input} from 'native-base';
 
-import Sound from 'react-native-sound';
-import Video from 'react-native-video';
-import * as utils from './utils/utils';
-import CircleProgress from './utils/circleProgress';
+var modelJson, modelWeights;
 
-import lungeModel from './model/lunge/model.json';
-import lungeModelWeights from './model/lunge/group1-shard1of1.bin';
-import shoulderPressModel from './model/shoulder_press/model.json';
-import shoulderPressModelWeights from './model/shoulder_press/group1-shard1of1.bin';
-import squatModel from './model/squat/model.json';
-import squatModelWeights from './model/squat/group1-shard1of1.bin';
-
-const TensorCamera = cameraWithTensors(Camera);
-// const modelJson = lungeModel;
-// const modelWeights = lungeModelWeights;
-// const modelJson = shoulderPressModel;
-// const modelWeights = shoulderPressModelWeights;
-const modelJson = squatModel;
-const modelWeights = squatModelWeights;
-const {width, height} = Dimensions.get('window');
-
-const resolution = 224;
-var isStart = false;
-var c1, c2, c3, c4, c5, c6;
-var videoURL = require('./prepare.mp4');
-var checkExCount = 0;
-var checkIntervalCount = 0;
-var great = 0,
-  nice = 0,
-  bad = 0;
-var nowScore = '';
-var preScore = '';
-var combo = 0;
-
-export default function App() {
-  const [tfReady, setTfReady] = useState(false);
-  const [model, setModel] = useState(false);
-  const [poseModel, setPoseModel] = useState(false);
-  const [displayText, setDisplayText] = useState('');
-  const [displayText2, setDisplayText2] = useState('');
-  const [displayText3, setDisplayText3] = useState('');
-  const [pose, setPose] = useState(null);
-  const [hasPermission, setHasPermission] = useState(null);
-  const [type, setType] = useState(Camera.Constants.Type.back);
-  const windowWidth = useWindowDimensions().width;
-  const windowHeight = useWindowDimensions().height;
-
-  const checkTf = async () => {
-    console.log('loading models');
-    await tf.ready();
-    console.log('tf ready loading, mobileNet');
-    const poseModel = await posenet.load({
-      architecture: 'MobileNetV1',
-      outputStride: 16,
-      inputResolution: {width: resolution, height: resolution},
-      multiplier: 0.75,
-      quantBytes: 2,
+function selectScreen({navigation}) {
+  const [count, setCount] = useState(3);
+  const onPress = (key) => {
+    if (key == 'lunge') {
+      modelJson = require('./model/lunge/model.json');
+      modelWeights = require('./model/lunge/group1-shard1of1.bin');
+    } else if (key == 'squat') {
+      modelJson = require('./model/squat/model.json');
+      modelWeights = require('./model/squat/group1-shard1of1.bin');
+    } else if (key == 'shoulderPress') {
+      modelJson = require('./model/shoulder_press/model.json');
+      modelWeights = require('./model/shoulder_press/group1-shard1of1.bin');
+    }
+    navigation.navigate('doing exercise', {
+      modelJson,
+      modelWeights,
+      exercise: key,
+      maxInterval: count,
     });
-    console.log('Posenet loaded');
-    const model = await tf.loadLayersModel(
-      bundleResourceIO(modelJson, modelWeights),
-    );
-    console.log('Classifier loaded');
-    setPoseModel(poseModel);
-    setModel(model);
-    // setDisplayText('loaded Models');
-    setTfReady(true);
   };
-
-  const cameraCheck = async () => {
-    const {status} = await Camera.requestPermissionsAsync();
-    setHasPermission(status === 'granted');
-  };
-
-  useEffect(() => {
-    checkTf();
-    cameraCheck();
-    Sound.setCategory('Playback');
-    audioStart('forgiveness.mp3');
-    LogBox.ignoreLogs(['Possible Unhandled Promise Rejection']);
-  }, []);
-
-  function audioStart(fileName, volume) {
-    var whoosh = new Sound(fileName, Sound.MAIN_BUNDLE, (error) => {
-      if (error) {
-        console.log('failed to load the sound', error);
-        return;
-      }
-
-      whoosh.play((success) => {
-        if (success) {
-          console.log('successfully finished playing');
-        } else {
-          console.log('playback failed due to audio decoding errors');
-        }
-      });
-    });
-
-    whoosh.setVolume(volume);
-
-    whoosh.setPan(1);
-
-    whoosh.setNumberOfLoops(-1);
-
-    whoosh.setCurrentTime(2.5);
-
-    whoosh.pause();
-
-    whoosh.release();
-  }
-
-  let AUTORENDER = true;
-
-  async function algorithm(images, sec) {
-    //audioStart('start1.mp3', 1);
-
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c1 = prediction.dataSync()[0];
-      console.log('첫번째 : ', prediction.dataSync());
-    }, sec * (3 / 4));
-
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c2 = prediction.dataSync()[0];
-      console.log('두번째 : ', prediction.dataSync());
-    }, sec * (5 / 4));
-
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c3 = prediction.dataSync()[1];
-      console.log('세번째 : ', prediction.dataSync());
-    }, sec * (7 / 4));
-
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c4 = prediction.dataSync()[1];
-      console.log('네번째 : ', prediction.dataSync());
-    }, sec * (9 / 4));
-
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c5 = prediction.dataSync()[0];
-      console.log('다섯번째 : ', prediction.dataSync());
-    }, sec * (11 / 4));
-
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c6 = prediction.dataSync()[0];
-      console.log('여섯번째 : ', prediction.dataSync());
-
-      var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
-      console.log('총점은 : ', score);
-      if (score >= 67) {
-        audioStart('great.mp3', 1);
-        nowScore = 'great';
-        great += 1;
-      } else if (score >= 52) {
-        audioStart('nice.mp3', 1);
-        nowScore = 'nice';
-        nice += 1;
-      } else {
-        audioStart('bad.mp3', 1);
-        nowScore = 'bad';
-        bad += 1;
-      }
-      checkExCount += 1;
-    }, sec * (13 / 4));
-  }
-
-  async function handleCameraStream(images, updatePreview, gl) {
-    const loop = async () => {
-      if (!AUTORENDER) {
-        updatePreview();
-      }
-
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-      if (pose.score >= 0.4) {
-        setDisplayText('');
-        if (!isStart) {
-          isStart = true;
-
-          setTimeout(() => {
-            audioStart('count3.mp3');
-            setTimeout(() => {
-              audioStart('count2.mp3');
-            }, 1000);
-            setTimeout(() => {
-              audioStart('count1.mp3');
-            }, 2000);
-            setTimeout(() => {
-              audioStart('start.mp3');
-              setDisplayText2(checkExCount + ' / 10');
-              videoURL = require('./squat.mp4');
-              var sec = 850;
-              setTimeout(() => {
-                algorithm(images, sec);
-                var interval = setInterval(() => {
-                  algorithm(images, sec);
-                  if (nowScore == 'great' || nowScore == 'nice') {
-                    combo += 1;
-                    setDisplayText3(combo + ' combo!');
-                  } else {
-                    if (combo !== 0) {
-                      setDisplayText3('break!!');
-                      combo = 0;
-                    } else {
-                      setDisplayText3('');
-                    }
-                  }
-                  setDisplayText2(checkExCount + ' / 10 \n' + nowScore);
-
-                  console.log('checkExCount : ', checkExCount);
-                  if (checkExCount == 9) {
-                    clearInterval(interval);
-                  }
-                }, sec * 4);
-              }, 700);
-            }, 3000);
-          }, 1000);
-        }
-      } else {
-        setDisplayText('카메라에 딱 맞게 들어와 주세요!');
-      }
-
-      tf.dispose([imageTensor]);
-
-      if (!AUTORENDER) {
-        gl.endFrameEXP();
-      }
-      requestAnimationFrame(loop);
-    };
-
-    loop();
-  }
-  let textureDims;
-  if (Platform.OS === 'ios') {
-    textureDims = {
-      height: 1920,
-      width: 1080,
-    };
-  } else {
-    textureDims = {
-      height: 1200,
-      width: 1600,
-    };
-  }
-
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
 
   return (
-    <>
-      <Text
-        style={{
-          position: 'absolute',
-          left: 10,
-          top: height * 0.1,
-          fontSize: 20,
-          zIndex: 2,
-          backgroundColor: 'white',
-        }}>
-        {displayText}
-      </Text>
-      <Text
-        style={{
-          position: 'absolute',
-          right: 10,
-          top: height * 0.1,
-          fontSize: 20,
-          zIndex: 2,
-          backgroundColor: 'white',
-        }}>
-        {displayText2}
-      </Text>
-      <Text
-        style={{
-          position: 'absolute',
-          left: 10,
-          top: height * 0.1,
-          fontSize: 20,
-          zIndex: 2,
-          backgroundColor: 'white',
-        }}>
-        {displayText3}
-      </Text>
-      <Video
-        source={videoURL}
-        style={{flex: 1, width: width, height: height}}
-        repeat={true}
-        muted
-      />
-      <View
-        style={{
-          width: width * 0.3,
-          height: height * 0.23,
-          position: 'absolute',
-          bottom: height * 0.18,
-          left: '3%',
-        }}>
-        <View style={styles.container}>
-          {tfReady ? (
-            <TensorCamera
-              style={{
-                zIndex: -10,
-                width: width * 0.39,
-                height: height * 0.39,
-              }}
-              type={Camera.Constants.Type.front}
-              cameraTextureHeight={textureDims.height}
-              cameraTextureWidth={textureDims.width}
-              resizeHeight={resolution}
-              resizeWidth={resolution}
-              resizeDepth={3}
-              onReady={handleCameraStream}
-              autorender={AUTORENDER}
-            />
-          ) : (
-            <View />
-          )}
-        </View>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <Text>어떤 운동을 해볼까나?</Text>
+
+      <View style={{flexDirection: 'row'}}>
+        <TouchableOpacity
+          style={{
+            marginRight: 10,
+            borderWidth: 1,
+            borderRadius: 10000,
+            padding: 10,
+            backgroundColor: count === 3 ? 'gray' : 'white',
+          }}
+          onPress={() => setCount(3)}>
+          <Text>3</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            marginRight: 10,
+            borderWidth: 1,
+            borderRadius: 10000,
+            padding: 10,
+            backgroundColor: count === 5 ? 'gray' : 'white',
+          }}
+          onPress={() => setCount(5)}>
+          <Text>5</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            marginRight: 10,
+            borderWidth: 1,
+            borderRadius: 10000,
+            padding: 10,
+            backgroundColor: count === 7 ? 'gray' : 'white',
+          }}
+          onPress={() => setCount(7)}>
+          <Text>7</Text>
+        </TouchableOpacity>
       </View>
-    </>
+
+      <TouchableOpacity
+        style={styles.btnNavi}
+        onPress={(e) => onPress('lunge')}>
+        <Text style={{fontWeight: 'bold', color: '#748ffc'}}>런지</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.btnNavi}
+        onPress={(e) => onPress('squat')}>
+        <Text style={{fontWeight: 'bold', color: '#748ffc'}}>스쿼트</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.btnNavi}
+        onPress={(e) => onPress('shoulderPress')}>
+        <Text style={{fontWeight: 'bold', color: '#748ffc'}}>숄더프레스</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const Stack = createStackNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="select exercise" component={selectScreen} />
+        <Stack.Screen
+          name="doing exercise"
+          component={exerciseScreen}
+          options={{headerShown: false}}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+  btnNavi: {
+    borderWidth: 2,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginVertical: 20,
+    width: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#748ffc',
   },
 });

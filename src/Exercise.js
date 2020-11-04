@@ -253,6 +253,8 @@ export default function Exercise({route, navigation}) {
       c6 = prediction.dataSync()[0];
       console.log('여섯번째 : ', prediction.dataSync());
     }, sec * (13 / 4));
+
+    // 최종 판정
     setTimeout(() => {
       var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
       console.log('총점은 : ', score);
@@ -280,9 +282,7 @@ export default function Exercise({route, navigation}) {
     if (nowScore !== 'bad') {
       combo += 1;
     } else {
-      if (combo > maxCombo) {
-        maxCombo = combo;
-      }
+      maxCombo = Math.max(maxCombo, combo)
       combo = 0;
       audioStart('comboFail.mp3', 0.5);
     }
@@ -385,7 +385,7 @@ export default function Exercise({route, navigation}) {
 
         videoURL = require('./video/prepare.mp4');
         if (nowInterval === maxInterval) {
-          combo = maxCombo;
+          combo = Math.max(maxCombo, combo);
         }
         visible = true;
         isStart = false;

@@ -35,20 +35,29 @@ import exerciseScreen from './src/Exercise';
 import {Input} from 'native-base';
 
 var modelJson, modelWeights;
+const modelPath = './src/model'
 
 function selectScreen({navigation}) {
   const [count, setCount] = useState(3);
   const onPress = (key) => {
-    if (key == 'lunge') {
-      modelJson = require('./src/model/lunge/model.json');
-      modelWeights = require('./src/model/lunge/group1-shard1of1.bin');
-    } else if (key == 'squat') {
-      modelJson = require('./src/model/squat/model.json');
-      modelWeights = require('./src/model/squat/group1-shard1of1.bin');
-    } else if (key == 'shoulderPress') {
-      modelJson = require('./src/model/shoulder_press/model.json');
-      modelWeights = require('./src/model/shoulder_press/group1-shard1of1.bin');
+    
+    switch(key){
+      case 'lunge':
+        modelJson = require(`${modelPath}/lunge/model.json`);
+        modelWeights = require(`${modelPath}/lunge/group1-shard1of1.bin`);
+        break;
+      case 'squat':
+        modelJson = require(`${modelPath}/squat/model.json`);
+        modelWeights = require(`${modelPath}/squat/group1-shard1of1.bin`);
+        break;
+      case 'shoulderPress':
+        modelJson = require(`${modelPath}/shoulderPress/model.json`);
+        modelWeights = require(`${modelPath}/shoulderPress/group1-shard1of1.bin`);
+        break;
+      default:
+        alert("Select Model!!!")
     }
+
     navigation.navigate('doing exercise', {
       modelJson,
       modelWeights,

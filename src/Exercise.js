@@ -63,9 +63,15 @@ var great = 0,
   bad = 0;
 var nowScore = '';
 var combo = 0;
+var maxCombo = 0;
 var visible = false;
 var pause = false;
 var maxCount = 10;
+var SoundNum = {
+  great: 4,
+  nice: 1,
+  bad: 1,
+};
 
 export default function Exercise({route, navigation}) {
   const [tfReady, setTfReady] = useState(false);
@@ -130,6 +136,7 @@ export default function Exercise({route, navigation}) {
       (great = 0), (nice = 0), (bad = 0);
       nowScore = '';
       combo = 0;
+      maxCombo = 0;
       visible = false;
     };
   }, []);
@@ -157,8 +164,6 @@ export default function Exercise({route, navigation}) {
   let AUTORENDER = true;
 
   async function algorithm(images, sec) {
-    //audioStart('start1.mp3', 1);
-
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -170,6 +175,10 @@ export default function Exercise({route, navigation}) {
 
       c1 = prediction.dataSync()[0];
       console.log('첫번째 : ', prediction.dataSync());
+
+      if (nowCount === maxCount - 1) {
+        audioStart('last.wav', 1);
+      }
     }, sec * (3 / 4));
 
     setTimeout(async () => {
@@ -239,66 +248,76 @@ export default function Exercise({route, navigation}) {
       var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
       console.log('총점은 : ', score);
       if (score >= 67) {
-        audioStart('great.mp3', 1);
         nowScore = 'great';
         great += 1;
       } else if (score >= 52) {
-        audioStart('nice.mp3', 1);
         nowScore = 'nice';
         nice += 1;
       } else {
-        audioStart('bad.mp3', 1);
         nowScore = 'bad';
         bad += 1;
       }
+
       nowCount += 1;
-      if (nowScore == 'great' || nowScore == 'nice') {
-        combo += 1;
-        setDisplayText3(combo + ' combo!');
-      } else {
-        if (combo !== 0) {
-          setDisplayText3('break!!');
-          combo = 0;
-        } else {
-          setDisplayText3('');
-        }
-      }
-      setDisplayText2(nowCount + ' / 10 \n' + nowScore);
+
+      scoreAudio(nowScore, SoundNum[nowScore]);
+
+      scoreAudio(nowScore);
+
+      setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
     }, sec * (13 / 4));
+  }
+
+  // 판정 후 음성
+  async function scoreAudio(nowScore, SoundNum) {
+    if (nowScore !== 'bad') {
+      combo += 1;
+    } else {
+      if (combo > maxCombo) {
+        maxCombo = combo;
+      }
+      combo = 0;
+      audioStart('comboFail.mp3', 1);
+    }
+
+    audioStart(nowScore + Math.ceil(Math.random() * SoundNum) + '.wav', 1);
   }
 
   async function exerciseVideo(exercise, nowInterval) {
     if (exercise === 'squat') {
       videoURL = require('./video/squat.mp4');
-      // return require('./squat.mp4');
     } else if (exercise === 'shoulderPress') {
       videoURL = require('./video/shoulderPress.mp4');
-      // return require('./shoulderPress.mp4');
     } else if (exercise === 'lunge') {
       if (nowInterval % 2 === 0) {
         videoURL = require('./video/lungeR.mp4');
-        // return require('./lungeR.mp4');
       } else {
         videoURL = require('./video/lungeL.mp4');
-        // return require('./lungeL.mp4');
       }
     }
   }
 
   async function startExercise(images, time, exercise) {
+    if (time > 1000) {
+      audioStart('prepare.wav', 1);
+      setTimeout(() => {
+        audioStart('prepare' + Math.ceil(Math.random() * 3) + '.wav', 1);
+      }, time - 4000);
+    }
+
     setTimeout(() => {
-      audioStart('count3.mp3', 1);
+      audioStart('count3.wav', 1);
 
       setTimeout(() => {
-        audioStart('count2.mp3', 1);
+        audioStart('count2.wav', 1);
       }, 1000);
 
       setTimeout(() => {
-        audioStart('count1.mp3', 1);
+        audioStart('count1.wav', 1);
       }, 2000);
 
       setTimeout(() => {
-        audioStart('start.mp3', 1);
+        audioStart('start.wav', 1);
         exerciseVideo(exercise, nowInterval);
         pause = true;
         setTimeout(() => {
@@ -312,7 +331,6 @@ export default function Exercise({route, navigation}) {
           var interval = setInterval(() => {
             //운동 판별
             algorithm(images, sec);
-            console.log('nowCount : ', nowCount);
             // 코드 좀 잘못짜서 setInterval 멈추는 코드
             if (nowCount == maxCount - 1) {
               clearInterval(interval);
@@ -337,7 +355,7 @@ export default function Exercise({route, navigation}) {
         if (!isStart && !visible && nowInterval < maxInterval) {
           isStart = true;
           if (nowInterval == 0) {
-            startExercise(images, 1000, exercise);
+            startExercise(images, 7000, exercise);
           } else {
             startExercise(images, 0, exercise);
           }
@@ -355,10 +373,12 @@ export default function Exercise({route, navigation}) {
       if (nowCount == maxCount) {
         nowCount = 0;
 
-        console.log('nowCount : ', nowCount);
         nowInterval += 1;
 
         videoURL = require('./video/prepare.mp4');
+        if (nowInterval === maxInterval) {
+          combo = maxCombo;
+        }
         visible = true;
         isStart = false;
         console.log('visible : ', visible);

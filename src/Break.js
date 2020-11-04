@@ -7,12 +7,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import {maximum} from '@tensorflow/tfjs';
-import CircleProgress from './utils/circleProgress';
+import * as Progress from 'react-native-progress';
+import {Surface, Shape} from '@react-native-community/art';
 
 const {width, height} = Dimensions.get('window');
-const CONTENTS_WIDTH = width * 0.9;
-const CONTENTS_HEIGHT = height * 0.4;
+
+var time = 0;
+var progress = 0;
+var progressStop = false;
 
 const Break = ({
   visible,
@@ -25,8 +27,6 @@ const Break = ({
   discard,
   navigation,
 }) => {
-  const [loading, setLoading] = useState(false);
-
   const onPress = () => {
     ///every apply
     if (nowInterval < maxInterval) {
@@ -35,7 +35,43 @@ const Break = ({
       discard();
       navigation.navigate('select exercise');
     }
+    progress = 0;
+    time = 0;
   };
+
+  function animate() {
+    if (nowInterval < maxInterval) {
+      var timeInterval = setInterval(() => {
+        time += 1;
+        if (time == 30) {
+          clearInterval(timeInterval);
+        }
+      }, 1000);
+      var progressInterval = setInterval(() => {
+        progress += 0.5;
+        if (progress == 30) {
+          if (nowInterval < maxInterval) {
+            discard();
+          } else {
+            discard();
+            navigation.navigate('select exercise');
+          }
+          clearInterval(progressInterval);
+
+          setTimeout(() => {
+            time = 0;
+            progress = 0;
+            progressStop = false;
+          }, 1000);
+        }
+      }, 500);
+    }
+  }
+
+  if (visible == true && progressStop == false) {
+    progressStop = true;
+    animate();
+  }
 
   return (
     <Modal isVisible={visible} style={styles.container}>
@@ -48,7 +84,15 @@ const Break = ({
             great : {great} nice : {nice} bad : {bad}
           </Text>
           <Text>combo : {combo}</Text>
-          <CircleProgress></CircleProgress>
+
+          {nowInterval !== maxInterval ? (
+            <>
+              <Text style={{textAlign: 'center'}}>{30 - time}</Text>
+              <Progress.Bar progress={progress / 30} />
+            </>
+          ) : (
+            <Text>maxCombo : {combo}</Text>
+          )}
         </View>
         <View style={styles.btnGroup}>
           <TouchableOpacity

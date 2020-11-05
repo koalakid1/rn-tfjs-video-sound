@@ -252,11 +252,7 @@ export default function Exercise({route, navigation}) {
 
       c6 = prediction.dataSync()[0];
       console.log('여섯번째 : ', prediction.dataSync());
-    }, sec * (13 / 4));
 
-    // 최종 판정
-    setTimeout(() => {
-      console.log(c1);
       var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
       console.log('총점은 : ', score);
       if (score >= 67) {
@@ -276,6 +272,9 @@ export default function Exercise({route, navigation}) {
 
       setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
     }, sec * (13 / 4));
+
+    // 최종 판정
+    // setTimeout(() => {}, sec * (13 / 4));
   }
 
   // 판정 후 음성

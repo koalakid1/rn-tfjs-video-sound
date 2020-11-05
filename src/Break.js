@@ -83,10 +83,9 @@ const Break = ({
           <Text>
             great : {great} nice : {nice} bad : {bad}
           </Text>
-          <Text>combo : {combo}</Text>
-
           {nowInterval !== maxInterval ? (
             <>
+              <Text>combo : {combo}</Text>
               <Text style={{textAlign: 'center'}}>{30 - time}</Text>
               <Progress.Bar progress={progress / 30} />
             </>

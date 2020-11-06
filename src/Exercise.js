@@ -126,7 +126,6 @@ export default function Exercise({route, navigation}) {
     cameraCheck();
     Sound.setCategory('Playback');
     var backgroundSound = audioStart('forgiveness.mp3', 1);
-
     LogBox.ignoreLogs(['Possible Unhandled Promise Rejection']);
 
     return () => {
@@ -240,7 +239,7 @@ export default function Exercise({route, navigation}) {
       console.log('다섯번째 : ', prediction.dataSync());
     }, sec * (11 / 4));
 
-    // 여섯번째 판정
+    // 여섯번째 판정 및 최종 판정
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -272,9 +271,6 @@ export default function Exercise({route, navigation}) {
 
       setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
     }, sec * (13 / 4));
-
-    // 최종 판정
-    // setTimeout(() => {}, sec * (13 / 4));
   }
 
   // 판정 후 음성

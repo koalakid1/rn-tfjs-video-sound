@@ -55,6 +55,7 @@ const {width, height} = Dimensions.get('window');
 const resolution = 224;
 var isStart = false;
 var c1, c2, c3, c4, c5, c6;
+var c = [0, 0, 0, 0, 0, 0];
 var videoURL = require('./video/prepare.mp4');
 var nowCount = 0; // 현재 몇번 했는지
 var nowInterval = 0;
@@ -73,6 +74,8 @@ var SoundNum = {
   bad: 1,
 };
 var interval;
+const greatThreshold = 67; 
+const niceThreshold = 52;
 
 export default function Exercise({route, navigation}) {
   const [tfReady, setTfReady] = useState(false);
@@ -164,26 +167,45 @@ export default function Exercise({route, navigation}) {
     return whoosh;
   }
 
+  async function judgement(images, idx) {
+    const imageTensor = images.next().value;
+    const pose = await poseModel.estimateSinglePose(imageTensor);
+    setPose(pose);
+    
+    var ten = utils.vecotrize(pose);
+
+    const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+    
+    c[idx] = prediction.dataSync()[0];
+    console.log(`${idx} : `, prediction.dataSync());
+
+    if ((nowCount === maxCount - 1) && (idx == 0)) {
+      audioStart('last.wav', 1);
+    }
+  }
+
   async function algorithm(images, sec) {
     // 첫번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
+    setTimeout(judgement(images, 0), sec * (2 / 4));
+    // setTimeout(async () => {
+    //   const imageTensor = images.next().value;
+    //   const pose = await poseModel.estimateSinglePose(imageTensor);
+    //   setPose(pose);
 
-      var ten = utils.vecotrize(pose);
+    //   var ten = utils.vecotrize(pose);
 
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+    //   const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
 
-      c1 = prediction.dataSync()[0];
-      console.log('첫번째 : ', prediction.dataSync());
+    //   c[0] = prediction.dataSync()[0];
+    //   console.log('첫번째 : ', prediction.dataSync());
 
-      if (nowCount === maxCount - 1) {
-        audioStart('last.wav', 1);
-      }
-    }, sec * (3 / 4));
+    //   if (nowCount === maxCount - 1) {
+    //     audioStart('last.wav', 1);
+    //   }
+    // }, sec * (2 / 4));
 
     //두번째 판정
+    // setTimeout(judgement(images, 1), sec * (3 / 4));
     setTimeout(async () => {
       const imageTensor = images.next().value;
       const pose = await poseModel.estimateSinglePose(imageTensor);
@@ -193,9 +215,9 @@ export default function Exercise({route, navigation}) {
 
       const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
 
-      c2 = prediction.dataSync()[0];
+      c[1]= prediction.dataSync()[0];
       console.log('두번째 : ', prediction.dataSync());
-    }, sec * (5 / 4));
+    }, sec * (3 / 4));
 
     // 세번째 판정
     setTimeout(async () => {
@@ -223,7 +245,7 @@ export default function Exercise({route, navigation}) {
 
       c4 = prediction.dataSync()[1];
       console.log('네번째 : ', prediction.dataSync());
-    }, sec * (9 / 4));
+    }, sec * (8 / 4));
 
     // 다섯번째 판정
     setTimeout(async () => {
@@ -237,7 +259,7 @@ export default function Exercise({route, navigation}) {
 
       c5 = prediction.dataSync()[0];
       console.log('다섯번째 : ', prediction.dataSync());
-    }, sec * (11 / 4));
+    }, sec * (12 / 4));
 
     // 여섯번째 판정 및 최종 판정
     setTimeout(async () => {
@@ -252,16 +274,19 @@ export default function Exercise({route, navigation}) {
       c6 = prediction.dataSync()[0];
       console.log('여섯번째 : ', prediction.dataSync());
 
-      var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
+      var score = ((c[0]+ c[1]) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
       console.log('총점은 : ', score);
-      if (score >= 67) {
+      if (score >= greatThreshold) {
         nowScore = 'great';
+        console.log('결과는 : great')
         great += 1;
-      } else if (score >= 52) {
+      } else if (score >= niceThreshold) {
         nowScore = 'nice';
+        console.log('결과는 : nice')
         nice += 1;
       } else {
         nowScore = 'bad';
+        console.log('결과는 : bad')
         bad += 1;
       }
 
@@ -328,7 +353,7 @@ export default function Exercise({route, navigation}) {
         }, 850);
         setDisplayText2(nowCount + ' / 10');
         //videoURL = exerciseVideo(exercise, nowInterval);
-        var sec = 850;
+        const sec = 850;
         setTimeout(() => {
           algorithm(images, sec);
           interval = setInterval(() => {

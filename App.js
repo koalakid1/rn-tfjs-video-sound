@@ -31,7 +31,7 @@ import {
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import exerciseScreen from './src/Exercise';
+import Exercise from './src/Exercise';
 import {Input} from 'native-base';
 
 var modelJson, modelWeights;
@@ -133,7 +133,7 @@ export default function App() {
         <Stack.Screen name="select exercise" component={selectScreen} />
         <Stack.Screen
           name="doing exercise"
-          component={exerciseScreen}
+          component={Exercise}
           options={{headerShown: false}}
         />
       </Stack.Navigator>

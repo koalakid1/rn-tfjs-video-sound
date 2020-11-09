@@ -54,7 +54,8 @@ const {width, height} = Dimensions.get('window');
 
 const resolution = 224;
 var isStart = false;
-var c1, c2, c3, c4, c5, c6;
+const timeInterval = [2/4, 3/4, 7/4, 8/4, 12/4, 13/4];
+var c = [0, 0, 0, 0, 0, 0];
 var videoURL = require('./video/prepare.mp4');
 var nowCount = 0; // 현재 몇번 했는지
 var nowInterval = 0;
@@ -73,6 +74,8 @@ var SoundNum = {
   bad: 1,
 };
 var interval;
+const greatThreshold = 67; 
+const niceThreshold = 52;
 
 export default function Exercise({route, navigation}) {
   const [tfReady, setTfReady] = useState(false);
@@ -164,115 +167,6 @@ export default function Exercise({route, navigation}) {
     return whoosh;
   }
 
-  async function algorithm(images, sec) {
-    // 첫번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c1 = prediction.dataSync()[0];
-      console.log('첫번째 : ', prediction.dataSync());
-
-      if (nowCount === maxCount - 1) {
-        audioStart('last.wav', 1);
-      }
-    }, sec * (3 / 4));
-
-    //두번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c2 = prediction.dataSync()[0];
-      console.log('두번째 : ', prediction.dataSync());
-    }, sec * (5 / 4));
-
-    // 세번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c3 = prediction.dataSync()[1];
-      console.log('세번째 : ', prediction.dataSync());
-    }, sec * (7 / 4));
-
-    // 네번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c4 = prediction.dataSync()[1];
-      console.log('네번째 : ', prediction.dataSync());
-    }, sec * (9 / 4));
-
-    // 다섯번째 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c5 = prediction.dataSync()[0];
-      console.log('다섯번째 : ', prediction.dataSync());
-    }, sec * (11 / 4));
-
-    // 여섯번째 판정 및 최종 판정
-    setTimeout(async () => {
-      const imageTensor = images.next().value;
-      const pose = await poseModel.estimateSinglePose(imageTensor);
-      setPose(pose);
-
-      var ten = utils.vecotrize(pose);
-
-      const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
-
-      c6 = prediction.dataSync()[0];
-      console.log('여섯번째 : ', prediction.dataSync());
-
-      var score = ((c1 + c2) / 8 + (c3 + c4) / 4 + (c5 + c6) / 8) * 100;
-      console.log('총점은 : ', score);
-      if (score >= 67) {
-        nowScore = 'great';
-        great += 1;
-      } else if (score >= 52) {
-        nowScore = 'nice';
-        nice += 1;
-      } else {
-        nowScore = 'bad';
-        bad += 1;
-      }
-
-      nowCount += 1;
-
-      scoreAudio(nowScore, SoundNum[nowScore]);
-
-      setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
-    }, sec * (13 / 4));
-  }
-
   // 판정 후 음성
   async function scoreAudio(nowScore, SoundNum) {
     if (nowScore !== 'bad') {
@@ -284,6 +178,54 @@ export default function Exercise({route, navigation}) {
     }
 
     audioStart(nowScore + Math.ceil(Math.random() * SoundNum) + '.wav', 1);
+  }
+
+  function getFinalScore(){
+    var score = ((c[0]+ c[1]) / 8 + (c[2] + c[3]) / 4 + (c[4] + c[5]) / 8) * 100;
+    console.log('총점은 : ', score);
+    if (score >= greatThreshold) {
+      nowScore = 'great';
+      console.log('결과는 : great')
+      great += 1;
+    } else if (score >= niceThreshold) {
+      nowScore = 'nice';
+      console.log('결과는 : nice')
+      nice += 1;
+    } else {
+      nowScore = 'bad';
+      console.log('결과는 : bad')
+      bad += 1;
+    }
+
+    nowCount += 1;
+
+    scoreAudio(nowScore, SoundNum[nowScore]);
+
+    setDisplayText2(nowCount + ' / ' + maxCount + '\n' + nowScore);
+  }
+
+  async function judgement(images, idx) {
+    const imageTensor = images.next().value;
+    const pose = await poseModel.estimateSinglePose(imageTensor);
+    setPose(pose);
+    
+    var ten = utils.vecotrize(pose);
+
+    const prediction = await model.predict(tf.tensor(ten).reshape([1, 34]));
+    
+    var label = (idx ===  2 || idx === 3 ) ? 1 : 0
+    c[idx] = prediction.dataSync()[label];
+    console.log(`${idx} : `, prediction.dataSync());
+
+    if ((nowCount === maxCount - 1) && (idx == 0)) audioStart('last.wav', 1);
+
+    if (idx == 5) getFinalScore();
+  }
+
+  function algorithm(images, sec) {
+    for (var i = 0; i < 6; i++){
+      setTimeout(judgement, sec * timeInterval[i], images, i);
+    }
   }
 
   async function exerciseVideo(exercise, nowInterval) {
@@ -328,7 +270,7 @@ export default function Exercise({route, navigation}) {
         }, 850);
         setDisplayText2(nowCount + ' / 10');
         //videoURL = exerciseVideo(exercise, nowInterval);
-        var sec = 850;
+        const sec = 850;
         setTimeout(() => {
           algorithm(images, sec);
           interval = setInterval(() => {
